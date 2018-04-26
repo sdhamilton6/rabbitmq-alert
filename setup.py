@@ -44,5 +44,8 @@ setup(
             "rabbitmq-alert = rabbitmqalert:rabbitmqalert.main"
         ]
     },
-    data_files=generate_data_files()
+    data_files=generate_data_files(),
+    install_requires=[
+        'requests'
+    ],
 )

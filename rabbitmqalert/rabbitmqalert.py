@@ -2,11 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import urllib2
-import json
 import time
 import smtplib
+
+import sys
+from requests.adapters import HTTPAdapter
+from requests.auth import HTTPBasicAuth
+
 import optionsresolver
-import logger
+import logging
+import requests
 
 
 class RabbitMQAlert:
@@ -15,7 +20,7 @@ class RabbitMQAlert:
 
     def check_queue_conditions(self, options):
         queue = options["queue"]
-        url = "http://%s:%s/api/queues/%s/%s" % (options["host"], options["port"], options["vhost"], options["queue"])
+        url = self._get_url("queues/{0}/{1}".format(options["vhost"], options["queue"]), options)
         data = self.send_request(url, options)
         if data is None:
             return
@@ -43,8 +48,8 @@ class RabbitMQAlert:
         if consumers_connected_min is not None and consumers < consumers_connected_min:
             self.send_notification(options, "%s: consumers_connected = %d < %d" % (queue, consumers, consumers_connected_min))
 
-    def check_consumer_conditions(self, options):		
-        url = "http://%s:%s/api/consumers" % (options["host"], options["port"])
+    def check_consumer_conditions(self, options):
+        url = self._get_url("consumers", options)
         data = self.send_request(url, options)
         if data is None:
             return
@@ -56,7 +61,7 @@ class RabbitMQAlert:
             self.send_notification(options, "consumers_connected = %d < %d" % (consumers_connected, consumers_connected_min))
 
     def check_connection_conditions(self, options):
-        url = "http://%s:%s/api/connections" % (options["host"], options["port"])
+        url = self._get_url("connections", options)
         data = self.send_request(url, options)
         if data is None:
             return
@@ -69,7 +74,7 @@ class RabbitMQAlert:
             self.send_notification(options, "open_connections = %d < %d" % (open_connections, open_connections_min))
 
     def check_node_conditions(self, options):
-        url = "http://%s:%s/api/nodes" % (options["host"], options["port"])
+        url = self._get_url("nodes", options)
         data = self.send_request(url, options)
         if data is None:
             return
@@ -88,20 +93,24 @@ class RabbitMQAlert:
                 self.send_notification(options, "Node %s - node_memory_used = %d > %d MBs" % (node.get("name"), node.get("mem_used"), node_memory))
 
     def send_request(self, url, options):
-        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        password_mgr.add_password(None, url, options["username"], options["password"])
-        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-        opener = urllib2.build_opener(handler)
+        class HostHeaderSSLAdapter(HTTPAdapter):
+            def send(self, request, **kwargs):
+                connection_pool_kwargs = self.poolmanager.connection_pool_kw
+                connection_pool_kwargs["assert_hostname"] = False
+                return super(HostHeaderSSLAdapter, self).send(request, **kwargs)
+
+        auth = HTTPBasicAuth(options["username"], options["password"])
 
         try:
-            request = opener.open(url)
-            response = request.read()
-            request.close()
-
-            data = json.loads(response)
+            s = requests.Session()
+            if options["ssl"]:
+                s.mount('https://', HostHeaderSSLAdapter())
+            r = s.get(url, auth=auth, cert=self._get_cert(options), verify=self._get_ca(options))
+            r.raise_for_status()
+            data = r.json()
             return data
-        except (urllib2.HTTPError, urllib2.URLError):
-            self.log.error("Error while consuming the API endpoint \"{0}\"".format(url))
+        except requests.exceptions.RequestException:
+            self.log.exception("Error while consuming the API endpoint \"{0}\"".format(url))
             return None
 
     def send_notification(self, options, body):
@@ -147,14 +156,38 @@ class RabbitMQAlert:
             response = urllib2.urlopen(request)
             response.close()
 
+    @classmethod
+    def _get_url(cls, path, options):
+        if options["ssl"]:
+            protocol = "https"
+        else:
+            protocol = "http"
+
+        return "{0}://{1}:{2}/api/{3}".format(protocol, options["host"], options["port"], path)
+
+    @classmethod
+    def _get_cert(cls, options):
+        if not options["ssl"]:
+            return None
+
+        return options["ssl_cert"], options["ssl_key"]
+
+    @classmethod
+    def _get_ca(cls, options):
+        if not options["ssl"]:
+            return None
+
+        return options["ssl_ca"]
+
 
 def main():
-    log = logger.Logger()
-    log.info("Starting application...")
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+                        format="%(asctime)s %(levelname)s:%(name)s:%(threadName)s:%(message)s")
+    logging.info("Starting application...")
 
-    rabbitmq_alert = RabbitMQAlert(log)
+    rabbitmq_alert = RabbitMQAlert(logging)
 
-    opt_resolver = optionsresolver.OptionsResolver(log)
+    opt_resolver = optionsresolver.OptionsResolver(logging)
     options = opt_resolver.setup_options()
 
     while True:

@@ -375,6 +375,7 @@ class RabbitMQAlertTestCase(unittest.TestCase):
         options = {
             "host": "foo",
             "port": 1,
+            "ssl": False,
             "vhost": "foo",
             "queue": "foo",
             "queues": ["foo"],

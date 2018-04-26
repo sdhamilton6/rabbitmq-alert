@@ -1,6 +1,9 @@
 [Server]
 host=localhost
 port=8080
+ssl_on=False
+ssl_cert=None
+ssl_key=None
 username=guest
 password=guest
 vhost=%2f

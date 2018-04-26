@@ -26,6 +26,10 @@ class OptionsResolverTestCase(unittest.TestCase):
         options = [
             "--host", "foo-host",
             "--port", "foo-port",
+            "--ssl", "",
+            "--ssl-key", "123",
+            "--ssl-cert", "321",
+            "--ssl-ca", "098",
             "--username", "foo-username",
             "--password", "foo-password",
             "--vhost", "foo-vhost",
@@ -429,6 +433,9 @@ class OptionsResolverTestCase(unittest.TestCase):
             "Server": {
                 "host": "foo-host",
                 "port": "foo-port",
+                "ssl": False,
+                "ssl_cert": "",
+                "ssl_key": "",
                 "username": "foo-username",
                 "password": "foo-password",
                 "vhost": "foo-vhost",
@@ -469,6 +476,9 @@ class OptionsResolverTestCase(unittest.TestCase):
             "Server": {
                 "host": "foo-host",
                 "port": "foo-port",
+                "ssl": False,
+                "ssl_key": "",
+                "ssl_cert": "",
                 "username": "foo-username",
                 "password": "foo-password",
                 "vhost": "foo-vhost",
@@ -511,6 +521,9 @@ class OptionsResolverTestCase(unittest.TestCase):
             "Server": {
                 "host": "foo-host",
                 "port": "foo-port",
+                "ssl": False,
+                "ssl_cert": "",
+                "ssl_key": "",
                 "username": "foo-username",
                 "password": "foo-password",
                 "vhost": "foo-vhost",

@@ -17,6 +17,12 @@ class OptionsResolver:
         arguments.add_option("-c", "--config-file", dest="config_file", help="Path of the configuration file", type="string")
         arguments.add_option("--host", dest="host", help="RabbitMQ API address", type="string")
         arguments.add_option("--port", dest="port", help="RabbitMQ API port", type="string")
+
+        arguments.add_option("--ssl", dest="ssl", help="RabbitMQ API uses ssl", action="store_true", default=False)
+        arguments.add_option("--ssl-key", dest="ssl_key", help="SSL Client key", type="string")
+        arguments.add_option("--ssl-cert", dest="ssl_cert", help="SSL Client cert", type="string")
+        arguments.add_option("--ssl-ca", dest="ssl_ca", help="SSL CA", type="string")
+
         arguments.add_option("--username", dest="username", help="RabbitMQ API username", type="string")
         arguments.add_option("--password", dest="password", help="RabbitMQ API password", type="string")
         arguments.add_option("--vhost", dest="vhost", help="Name of the vhost to inspect", type="string")
@@ -85,6 +91,16 @@ class OptionsResolver:
             options["email_ssl"] = config_file_options.getboolean("Email", "ssl")
         else:
             options["email_ssl"] = cli_arguments.email_ssl
+
+        try:
+            options["ssl"] = config_file_options.get("Server", "ssl")
+        except ConfigParser.NoSectionError:
+            options["ssl"] = cli_arguments.ssl
+
+        if options["ssl"]:
+            options["ssl_key"] = cli_arguments.ssl_key or config_file_options.get("Server", "ssl_key")
+            options["ssl_cert"] = cli_arguments.ssl_cert or config_file_options.get("Server", "ssl_cert")
+            options["ssl_ca"] = cli_arguments.ssl_ca or config_file_options.get("Server", "ssl_ca")
 
         # get queue specific condition values if any, else construct from the generic one
         conditions = OptionsResolver.construct_conditions(options, cli_arguments, config_file_options)
