@@ -3,16 +3,16 @@
 
 import optparse
 import ConfigParser
-import os.path
+import logging
+import os
 
 CONFIG_FILE_PATH = "/etc/rabbitmq-alert/config.ini"
 
 
-class OptionsResolver:
-    def __init__(self, logger):
-        self.log = logger
+class OptionsResolver(object):
 
-    def setup_options(self):
+    @staticmethod
+    def setup_options():
         arguments = optparse.OptionParser()
         arguments.add_option("-c", "--config-file", dest="config_file", help="Path of the configuration file", type="string")
         arguments.add_option("--host", dest="host", help="RabbitMQ API address", type="string")
@@ -57,11 +57,11 @@ class OptionsResolver:
         options = dict()
         if os.path.isfile(CONFIG_FILE_PATH) and not cli_arguments.config_file:
             config_file_options.read(CONFIG_FILE_PATH)
-            self.log.info("Using configuration file \"{0}\"".format(CONFIG_FILE_PATH))
+            logging.info("Using configuration file \"{0}\"".format(CONFIG_FILE_PATH))
         elif cli_arguments.config_file:
-            self.log.info("Using configuration file \"{0}\"".format(cli_arguments.config_file))
+            logging.info("Using configuration file \"{0}\"".format(cli_arguments.config_file))
             if not os.path.isfile(cli_arguments.config_file):
-                self.log.error("The provided configuration file \"{0}\" does not exist".format(cli_arguments.config_file))
+                logging.error("The provided configuration file \"{0}\" does not exist".format(cli_arguments.config_file))
                 exit(1)
 
             config_file_options.read(cli_arguments.config_file)

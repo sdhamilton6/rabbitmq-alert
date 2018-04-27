@@ -35,8 +35,7 @@ Installation
 Use the ``PIP`` command, which should already exist in your Linux installation:
 
 ::
-
-    sudo pip install rabbitmq-alert
+     pip install https://github.com/sdhamilton6/rabbitmq-alert
 
 Usage
 =====
@@ -47,14 +46,14 @@ Copy the example configuration file to the default path of the global configurat
 
 ::
 
-    sudo cp /etc/rabbitmq-alert/config.ini.example /etc/rabbitmq-alert/config.ini
+    cp /etc/rabbitmq-alert/config.ini.example /etc/rabbitmq-alert/config.ini
 
 | Edit it with you preferred settings. Then you are ready to execute ``rabbitmq-alert``
 | using the global configuration file. Just execute:
 
 ::
 
-    sudo rabbitmq-alert
+    rabbitmq-alert
 
 Execute with options
 --------------------
@@ -67,7 +66,7 @@ Example:
 
 ::
 
-    sudo rabbitmq-alert \
+    abbitmq-alert \
         --host=my-server --port=55672 --username=guest --password=guest \
         --vhost=%2F --queue=my_queue1,my_queue2 --ready-queue-size=3 --check-rate=300 \
         --email-to=admin@example.com --email-from=admin@example.com \
@@ -84,7 +83,7 @@ Then execute ``rabbitmq-alert`` with the configuration file option:
 
 ::
 
-    sudo rabbitmq-alert -c my_config.ini
+    rabbitmq-alert -c my_config.ini
 
 Execute as a daemon
 -------------------

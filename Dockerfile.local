@@ -5,6 +5,8 @@ LABEL maintainer="milonas.ko@gmail.com, forked: github.com/sdhamilton6/rabbitmq-
 RUN apk update && \
     apk add git
 
-RUN pip install git+git://github.com/sdhamilton6/rabbitmq-alert
+ADD rabbitmqalert /app
 
-CMD ["rabbitmq-alert"]
+RUN pip install requests
+
+CMD ["python", "/app/rabbitmqalert.py"]
