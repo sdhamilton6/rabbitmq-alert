@@ -1,3 +1,7 @@
+https://travis-ci.org/sdhamilton6/rabbitmq-alert.svg?branch=master
+[![Build Status](https://travis-ci.org/sdhamilton6/rabbitmq-alert.svg?branch=master)](https://travis-ci.org/sdhamilton6/rabbitmq-alert)
+
+
 About RabbitMQ Alert
 ====================
 
