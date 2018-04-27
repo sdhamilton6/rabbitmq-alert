@@ -17,8 +17,9 @@ import requests
 class RabbitMQAlert(object):
 
     def check_queue_conditions(self, options):
+        vhost = options["vhost"]
         queue = options["queue"]
-        url = self._get_url("queues/{0}/{1}".format(options["vhost"], options["queue"]), options)
+        url = self._get_url("queues/{0}/{1}".format(vhost, queue), options)
         data = self.send_request(url, options)
         if data is None:
             return
@@ -35,18 +36,18 @@ class RabbitMQAlert(object):
         consumers_connected_min = queue_conditions.get("queue_consumers_connected")
 
         if ready_size is not None and messages_ready > ready_size:
-            self.send_notification(options, "%s: messages_ready = %d > %d" % (queue, messages_ready, ready_size))
+            self.send_notification(options, "%s %s: messages_ready = %d > %d" % (vhost, queue, messages_ready, ready_size))
 
         if unack_size is not None and messages_unacknowledged > unack_size:
-            self.send_notification(options, "%s: messages_unacknowledged = %d > %d" % (
-                queue, messages_unacknowledged, unack_size))
+            self.send_notification(options, "%s %s: messages_unacknowledged = %d > %d" % (
+                vhost, queue, messages_unacknowledged, unack_size))
 
         if total_size is not None and messages > total_size:
-            self.send_notification(options, "%s: messages = %d > %d" % (queue, messages, total_size))
+            self.send_notification(options, "%s %s: messages = %d > %d" % (vhost, queue, messages, total_size))
 
         if consumers_connected_min is not None and consumers < consumers_connected_min:
             self.send_notification(options,
-                                   "%s: consumers_connected = %d < %d" % (queue, consumers, consumers_connected_min))
+                                   "%s %s: consumers_connected = %d < %d" % (vhost, queue, consumers, consumers_connected_min))
 
     def check_consumer_conditions(self, options):
         url = self._get_url("consumers", options)
