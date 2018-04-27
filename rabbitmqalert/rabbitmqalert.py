@@ -198,7 +198,7 @@ def main():
     del opt_resolver
 
     while True:
-        logging.info("Assessing node: {0}".format(options["host"]))
+        logging.info("Assessing node: {0} on vhost {1}".format(options["host"], options["vhost"]))
         rabbitmq_alert = RabbitMQAlert()
 
         default_conditions = options["default_conditions"]
